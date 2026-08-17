@@ -6,8 +6,10 @@
 /.direnv/
 /.nix-hex/
 /.nix-mix/
+/node_modules/
 
 erl_crash.dump
+*.log
 *.ez
 *.beam
 .DS_Store

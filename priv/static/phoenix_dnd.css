@@ -1,0 +1,222 @@
+.phoenix-dnd {
+  --phoenix-dnd-background: #10141c;
+  --phoenix-dnd-grid-color: rgb(255 255 255 / 0.045);
+  --phoenix-dnd-node-background: #1c2431;
+  --phoenix-dnd-node-border: #475569;
+  --phoenix-dnd-node-color: #e5e7eb;
+  --phoenix-dnd-selection: #60a5fa;
+  --phoenix-dnd-edge: #94a3b8;
+  --phoenix-dnd-wire: #7dd3fc;
+  --phoenix-dnd-port: #cbd5e1;
+  --phoenix-dnd-port-target: #4ade80;
+
+  position: relative;
+  display: block;
+  min-block-size: 20rem;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: var(--phoenix-dnd-background);
+  color: var(--phoenix-dnd-node-color);
+  outline: none;
+}
+
+.phoenix-dnd:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--phoenix-dnd-selection);
+}
+
+.phoenix-dnd__surface {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  background-image:
+    linear-gradient(var(--phoenix-dnd-grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--phoenix-dnd-grid-color) 1px, transparent 1px);
+  background-position:
+    var(--phoenix-dnd-grid-x, 0) var(--phoenix-dnd-grid-y, 0),
+    var(--phoenix-dnd-grid-x, 0) var(--phoenix-dnd-grid-y, 0);
+  background-size: var(--phoenix-dnd-grid-size, 24px) var(--phoenix-dnd-grid-size, 24px);
+}
+
+.phoenix-dnd__world {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.phoenix-dnd__edges,
+.phoenix-dnd__nodes {
+  position: absolute;
+  inset: 0;
+}
+
+.phoenix-dnd__edges {
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.phoenix-dnd__edge,
+.phoenix-dnd__edge-hit,
+.phoenix-dnd__wire-preview {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.phoenix-dnd__edge {
+  stroke: var(--phoenix-dnd-edge);
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.phoenix-dnd__edge-hit {
+  stroke: transparent;
+  stroke-width: 16;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.phoenix-dnd__edge--selected:not([data-dnd-selected="false"]),
+.phoenix-dnd__edge[data-selected="true"]:not([data-dnd-selected="false"]),
+.phoenix-dnd__edge[data-dnd-selected="true"] {
+  stroke: var(--phoenix-dnd-selection);
+  stroke-width: 3;
+}
+
+.phoenix-dnd__edge[data-dnd-unresolved="true"] {
+  display: none;
+}
+
+.phoenix-dnd__nodes {
+  pointer-events: none;
+}
+
+.phoenix-dnd__node {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  min-inline-size: 9rem;
+  border: 1px solid var(--phoenix-dnd-node-border);
+  border-radius: 0.5rem;
+  background: var(--phoenix-dnd-node-background);
+  color: var(--phoenix-dnd-node-color);
+  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 0.25);
+  pointer-events: auto;
+  will-change: transform;
+}
+
+.phoenix-dnd__node--selected:not([data-dnd-selected="false"]),
+.phoenix-dnd__node[data-dnd-selected="true"] {
+  border-color: var(--phoenix-dnd-selection);
+  box-shadow:
+    0 0 0 1px var(--phoenix-dnd-selection),
+    0 0.5rem 1.5rem rgb(0 0 0 / 0.25);
+}
+
+.phoenix-dnd__node-content {
+  padding: 0.75rem 1rem;
+}
+
+[data-dnd-drag-handle] {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.phoenix-dnd[data-dnd-interaction="node-drag"] [data-dnd-drag-handle],
+.phoenix-dnd[data-dnd-interaction="pan"] .phoenix-dnd__surface {
+  cursor: grabbing;
+}
+
+.phoenix-dnd__port {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  place-items: center;
+  background: transparent;
+  color: var(--phoenix-dnd-port);
+  cursor: crosshair;
+  transform: translate(-50%, -50%);
+  touch-action: none;
+}
+
+.phoenix-dnd__port[data-anchor="left"] {
+  inset-block-start: var(--phoenix-dnd-port-offset, 50%);
+  inset-inline-start: 0;
+}
+
+.phoenix-dnd__port[data-anchor="right"] {
+  inset-block-start: var(--phoenix-dnd-port-offset, 50%);
+  inset-inline-start: 100%;
+}
+
+.phoenix-dnd__port[data-anchor="top"] {
+  inset-block-start: 0;
+  inset-inline-start: var(--phoenix-dnd-port-offset, 50%);
+}
+
+.phoenix-dnd__port[data-anchor="bottom"] {
+  inset-block-start: 100%;
+  inset-inline-start: var(--phoenix-dnd-port-offset, 50%);
+}
+
+.phoenix-dnd__port-marker {
+  display: block;
+  inline-size: 0.65rem;
+  block-size: 0.65rem;
+  border: 2px solid currentcolor;
+  border-radius: inherit;
+  background: var(--phoenix-dnd-node-background);
+}
+
+.phoenix-dnd__port:hover .phoenix-dnd__port-marker,
+.phoenix-dnd__port[data-dnd-wire-target="true"] .phoenix-dnd__port-marker {
+  color: var(--phoenix-dnd-port-target);
+  box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--phoenix-dnd-port-target) 25%, transparent);
+}
+
+.phoenix-dnd__overlay {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.phoenix-dnd__wire-preview {
+  stroke: var(--phoenix-dnd-wire);
+  stroke-width: 2.5;
+  stroke-dasharray: 6 4;
+}
+
+.phoenix-dnd__selection-rect {
+  fill: color-mix(in srgb, var(--phoenix-dnd-selection) 14%, transparent);
+  stroke: var(--phoenix-dnd-selection);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.phoenix-dnd__wire-preview[hidden],
+.phoenix-dnd__selection-rect[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phoenix-dnd *,
+  .phoenix-dnd *::before,
+  .phoenix-dnd *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

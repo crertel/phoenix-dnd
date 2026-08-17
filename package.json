@@ -1,0 +1,9 @@
+{
+  "name": "phoenix-dnd",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check priv/static/phoenix_dnd.js",
+    "test": "node --test test/js/*.test.js"
+  }
+}
