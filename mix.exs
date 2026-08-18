@@ -8,6 +8,7 @@ defmodule PhoenixDnd.MixProject do
       app: :phoenix_dnd,
       version: @version,
       elixir: "~> 1.15",
+      compilers: [:phoenix_live_view] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       description: "A server-authoritative node editor component for Phoenix LiveView",
       package: package(),

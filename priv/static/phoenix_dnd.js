@@ -1879,7 +1879,7 @@ class GraphRuntime {
   }
 }
 
-const GraphHook = {
+export const GraphHook = {
   mounted() {
     this.__phoenixDndRuntime = new GraphRuntime(this)
     this.__phoenixDndRuntime.mount()
@@ -1908,7 +1908,7 @@ const GraphHook = {
 }
 
 export const hooks = Object.freeze({
-  "PhoenixDnd.Graph": GraphHook,
+  "PhoenixDnd.Editor.Graph": GraphHook,
 })
 
 export default hooks

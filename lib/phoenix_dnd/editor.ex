@@ -107,7 +107,7 @@ defmodule PhoenixDnd.Editor do
     <div
       id={Dom.editor_id(@id)}
       class={compact_classes(["phoenix-dnd", @class])}
-      phx-hook="PhoenixDnd.Graph"
+      phx-hook=".Graph"
       phx-target={@myself}
       tabindex="0"
       role="region"
@@ -230,6 +230,11 @@ defmodule PhoenixDnd.Editor do
           <rect class="phoenix-dnd__selection-rect" data-dnd-selection-rect />
         </svg>
       </div>
+
+      <script :type={Phoenix.LiveView.ColocatedHook} name=".Graph">
+        import {GraphHook} from "phoenix_dnd/priv/static/phoenix_dnd.js"
+        export default GraphHook
+      </script>
     </div>
     """
   end

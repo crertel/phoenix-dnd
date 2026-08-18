@@ -6,6 +6,23 @@ selection, node dragging, and connection previews.
 
 The package is in early development and has not yet been released to Hex.
 
+## Demo application
+
+A standalone Phoenix application lives in [`examples/demo`](examples/demo).
+It uses this repository as a path dependency and includes a five-node workflow,
+custom node rendering, the authoritative intent reducer, and server-triggered
+viewport controls.
+
+```sh
+nix develop
+cd examples/demo
+mix setup
+mix phx.server
+```
+
+Visit <http://localhost:4000>. The demo uses native ESM and intentionally has
+no separate npm or asset-build step.
+
 ## Installation
 
 For local development, add the repository as a path dependency:
@@ -24,13 +41,13 @@ Once published, use the Hex package instead:
 {:phoenix_dnd, "~> 0.1"}
 ```
 
-Import the hook in `assets/js/app.js` and merge its named `hooks` export into
-the hooks passed to `LiveSocket`:
+Import the component's colocated hook manifest in `assets/js/app.js` and merge
+its named `hooks` export into the hooks passed to `LiveSocket`:
 
 ```javascript
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
-import {hooks as phoenixDndHooks} from "phoenix_dnd/priv/static/phoenix_dnd.js"
+import {hooks as phoenixDndHooks} from "phoenix-colocated/phoenix_dnd"
 
 const appHooks = {}
 
@@ -38,6 +55,15 @@ const liveSocket = new LiveSocket("/live", Socket, {
   hooks: {...phoenixDndHooks, ...appHooks}
 })
 ```
+
+`PhoenixDnd.Editor` declares its namespaced hook with
+[`Phoenix.LiveView.ColocatedHook`](https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.ColocatedHook.html).
+The package keeps the substantial interaction runtime in its prebuilt,
+independently tested JavaScript module; the colocated manifest is a small
+adapter generated when the dependency compiles. Phoenix 1.8's default esbuild
+configuration resolves both `deps` and the Mix build path. If your asset
+pipeline is customized, make sure both are resolvable and run `mix compile`
+before bundling assets.
 
 Import the library CSS from `assets/css/app.css`. Use the dependency-relative
 path because Phoenix's default Tailwind task does not add `deps` as a package
@@ -47,10 +73,10 @@ search path:
 @import "../../deps/phoenix_dnd/priv/static/phoenix_dnd.css";
 ```
 
-The default Phoenix 1.8 esbuild configuration resolves JavaScript modules from
-`deps`. If yours does not, use
-`../../deps/phoenix_dnd/priv/static/phoenix_dnd.js` for the JavaScript import
-as well.
+For a pipeline that cannot consume colocated manifests, import the fallback
+hook map directly from
+`phoenix_dnd/priv/static/phoenix_dnd.js` (or its relative path under `deps`).
+It exposes the same fully qualified hook name.
 
 ## Rendering an editor
 

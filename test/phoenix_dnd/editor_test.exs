@@ -65,7 +65,7 @@ defmodule PhoenixDnd.EditorTest do
 
     assert html =~ ~s(id="#{Dom.editor_id("workflow / unsafe")}")
     assert html =~ ~s(class="phoenix-dnd")
-    assert html =~ ~s(phx-hook="PhoenixDnd.Graph")
+    assert html =~ ~s(phx-hook="PhoenixDnd.Editor.Graph")
     assert html =~ ~s(data-editor-id="workflow / unsafe")
     assert html =~ ~s(data-scene-revision="7")
     assert html =~ ~s(data-center-x="25")

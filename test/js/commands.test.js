@@ -13,7 +13,7 @@ import {
 const batch = (id, revision, commands = []) => ({batch_id: id, after_revision: revision, commands})
 
 test("the public hook registry uses the LiveView hook name", () => {
-  assert.equal(typeof hooks["PhoenixDnd.Graph"].mounted, "function")
+  assert.equal(typeof hooks["PhoenixDnd.Editor.Graph"].mounted, "function")
 })
 
 test("reply errors reject optimism while receipts await authoritative resolution", () => {
