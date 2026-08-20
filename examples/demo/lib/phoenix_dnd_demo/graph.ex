@@ -9,6 +9,8 @@ defmodule PhoenixDndDemo.Graph do
   alias PhoenixDnd.{Edge, Endpoint, Intent, Node, Port, Scene, Selection, Viewport}
 
   @type changes :: keyword()
+  @type node_template ::
+          :webhook | :transform | :branch | :email | :archive | :trigger | :action | String.t()
 
   @spec initial_scene() :: Scene.t()
   def initial_scene do
@@ -18,7 +20,14 @@ defmodule PhoenixDndDemo.Graph do
         label: "Webhook",
         kind: :trigger,
         class: "demo-node--trigger",
-        data: %{accent: "#facc15", summary: "Receive and validate a new lead event."},
+        data: %{
+          accent: "#facc15",
+          summary: "Receive and validate a new lead event.",
+          template: :webhook,
+          variant: :trigger,
+          method: "POST",
+          path: "/hooks/leads"
+        },
         ports: [Port.output("event", anchor: :right)]
       )
 
@@ -28,7 +37,13 @@ defmodule PhoenixDndDemo.Graph do
         label: "Mix payload",
         kind: :transform,
         class: "demo-node--transform",
-        data: %{accent: "#77e6c5", summary: "Normalize fields and enrich the event."},
+        data: %{
+          accent: "#77e6c5",
+          summary: "Normalize fields and enrich the event.",
+          template: :transform,
+          variant: :transform,
+          chips: ["Normalize", "Enrich"]
+        },
         ports: [
           Port.input("input", anchor: :left),
           Port.output("clean", anchor: :right),
@@ -42,7 +57,13 @@ defmodule PhoenixDndDemo.Graph do
         label: "Qualified?",
         kind: :branch,
         class: "demo-node--branch",
-        data: %{accent: "#c084fc", summary: "Route qualified leads to the right action."},
+        data: %{
+          accent: "#c084fc",
+          summary: "Route qualified leads to the right action.",
+          template: :branch,
+          variant: :branch,
+          branch_labels: %{yes: "Qualified", no: "Fallback"}
+        },
         ports: [
           Port.input("input", anchor: :left),
           Port.output("yes", anchor: :right),
@@ -56,7 +77,13 @@ defmodule PhoenixDndDemo.Graph do
         label: "Send email",
         kind: :action,
         class: "demo-node--action",
-        data: %{accent: "#60a5fa", summary: "Send a personalized welcome message."},
+        data: %{
+          accent: "#60a5fa",
+          summary: "Send a personalized welcome message.",
+          template: :email,
+          variant: :action,
+          template_name: "Qualified lead welcome"
+        },
         ports: [Port.input("input", anchor: :left)]
       )
 
@@ -66,7 +93,13 @@ defmodule PhoenixDndDemo.Graph do
         label: "Archive event",
         kind: :action,
         class: "demo-node--action",
-        data: %{accent: "#94a3b8", summary: "Persist the event for later review."},
+        data: %{
+          accent: "#94a3b8",
+          summary: "Persist the event for later review.",
+          template: :archive,
+          variant: :action,
+          retention: "30 days"
+        },
         ports: [Port.input("input", anchor: :left)]
       )
 
@@ -83,10 +116,54 @@ defmodule PhoenixDndDemo.Graph do
       nodes: nodes,
       edges: edges,
       selection: Selection.new!(node_ids: ["mixer"]),
-      viewport: Viewport.new!(center_x: 520, center_y: 190, zoom: 0.9),
-      meta: %{next_edge_id: 5}
+      viewport: Viewport.new!(center_x: 520, center_y: 260, zoom: 0.9),
+      meta: %{next_edge_id: 5, next_node_id: 1}
     )
   end
+
+  @doc """
+  Builds one demo node template as a scene change without advancing revision.
+
+  The returned node ID is deterministic within the scene and the new node
+  replaces the current selection. Pass the changes to `PhoenixDnd.Scene.bump/2`.
+  """
+  @spec add_node(Scene.t(), node_template()) ::
+          {:ok, changes(), String.t()} | {:error, String.t()}
+  def add_node(%Scene{} = scene, template_type) do
+    with {:ok, template} <- normalize_node_template(template_type) do
+      {node_id, counter, meta} = take_node_id(scene)
+      node = template_node(template, node_id, counter, added_node_position(counter))
+
+      {:ok,
+       [
+         nodes: scene.nodes ++ [node],
+         selection: Selection.new!(node_ids: [node_id]),
+         meta: meta
+       ], node_id}
+    end
+  rescue
+    error in ArgumentError -> {:error, Exception.message(error)}
+  end
+
+  def add_node(_scene, _template_type), do: {:error, "expected a scene"}
+
+  @doc """
+  Removes the scene's selected nodes and edges without advancing revision.
+
+  Edges incident to a selected node are removed along with that node. Pass the
+  returned changes to `PhoenixDnd.Scene.bump/2`.
+  """
+  @spec remove_selection(Scene.t()) :: {:ok, changes()} | {:error, String.t()}
+  def remove_selection(%Scene{} = scene) do
+    node_ids = scene.selection.node_ids |> Enum.sort()
+    edge_ids = scene.selection.edge_ids |> Enum.sort()
+
+    with :ok <- non_empty_delete(node_ids, edge_ids) do
+      {:ok, delete_changes(scene, node_ids, edge_ids)}
+    end
+  end
+
+  def remove_selection(_scene), do: {:error, "expected a scene"}
 
   @spec apply_intent(Scene.t(), Intent.t()) :: {:ok, changes()} | {:error, String.t()}
   def apply_intent(%Scene{} = scene, %Intent{} = intent) do
@@ -194,28 +271,7 @@ defmodule PhoenixDndDemo.Graph do
     with :ok <- non_empty_delete(node_ids, edge_ids),
          :ok <- known_node_ids(scene, node_ids),
          :ok <- known_edge_ids(scene, edge_ids) do
-      removed_nodes = MapSet.new(node_ids)
-      explicitly_removed_edges = MapSet.new(edge_ids)
-
-      {removed_edges, kept_edges} =
-        Enum.split_with(scene.edges, fn edge ->
-          MapSet.member?(explicitly_removed_edges, edge.id) or
-            MapSet.member?(removed_nodes, edge.source.node_id) or
-            MapSet.member?(removed_nodes, edge.target.node_id)
-        end)
-
-      removed_edge_ids = MapSet.new(removed_edges, & &1.id)
-
-      selection =
-        Selection.new!(
-          node_ids: MapSet.difference(scene.selection.node_ids, removed_nodes),
-          edge_ids: MapSet.difference(scene.selection.edge_ids, removed_edge_ids)
-        )
-
-      {:ok,
-       nodes: Enum.reject(scene.nodes, &MapSet.member?(removed_nodes, &1.id)),
-       edges: kept_edges,
-       selection: selection}
+      {:ok, delete_changes(scene, node_ids, edge_ids)}
     end
   end
 
@@ -322,6 +378,197 @@ defmodule PhoenixDndDemo.Graph do
 
   defp non_empty_delete([], []), do: {:error, "delete requires at least one node or edge"}
   defp non_empty_delete(_node_ids, _edge_ids), do: :ok
+
+  defp delete_changes(scene, node_ids, edge_ids) do
+    removed_nodes = MapSet.new(node_ids)
+    explicitly_removed_edges = MapSet.new(edge_ids)
+
+    {removed_edges, kept_edges} =
+      Enum.split_with(scene.edges, fn edge ->
+        MapSet.member?(explicitly_removed_edges, edge.id) or
+          MapSet.member?(removed_nodes, edge.source.node_id) or
+          MapSet.member?(removed_nodes, edge.target.node_id)
+      end)
+
+    removed_edge_ids = MapSet.new(removed_edges, & &1.id)
+
+    selection =
+      Selection.new!(
+        node_ids: MapSet.difference(scene.selection.node_ids, removed_nodes),
+        edge_ids: MapSet.difference(scene.selection.edge_ids, removed_edge_ids)
+      )
+
+    [
+      nodes: Enum.reject(scene.nodes, &MapSet.member?(removed_nodes, &1.id)),
+      edges: kept_edges,
+      selection: selection
+    ]
+  end
+
+  defp normalize_node_template(template)
+       when template in [:webhook, :transform, :branch, :email, :archive],
+       do: {:ok, template}
+
+  defp normalize_node_template(template) when template in [:trigger, "trigger"],
+    do: {:ok, :webhook}
+
+  defp normalize_node_template(template) when template in [:action, "action"],
+    do: {:ok, :email}
+
+  defp normalize_node_template(template) when is_binary(template) do
+    case template do
+      "webhook" -> {:ok, :webhook}
+      "transform" -> {:ok, :transform}
+      "branch" -> {:ok, :branch}
+      "email" -> {:ok, :email}
+      "archive" -> {:ok, :archive}
+      _ -> unknown_node_template(template)
+    end
+  end
+
+  defp normalize_node_template(template), do: unknown_node_template(template)
+
+  defp unknown_node_template(template) do
+    {:error,
+     "unknown node template #{inspect(template)}; expected webhook, transform, branch, email, or archive"}
+  end
+
+  defp template_node(:webhook, id, counter, position) do
+    Node.new!(id,
+      position: position,
+      label: "Webhook #{counter}",
+      kind: :trigger,
+      class: "demo-node--trigger",
+      data: %{
+        accent: "#facc15",
+        summary: "Receive a signed event from an external service.",
+        template: :webhook,
+        variant: :trigger,
+        method: "POST",
+        path: "/hooks/#{id}"
+      },
+      ports: [Port.output("event", anchor: :right)]
+    )
+  end
+
+  defp template_node(:transform, id, counter, position) do
+    Node.new!(id,
+      position: position,
+      label: "Transform #{counter}",
+      kind: :transform,
+      class: "demo-node--transform",
+      data: %{
+        accent: "#77e6c5",
+        summary: "Normalize fields and enrich the incoming event.",
+        template: :transform,
+        variant: :transform,
+        chips: ["Normalize", "Enrich"]
+      },
+      ports: [
+        Port.input("input", anchor: :left),
+        Port.output("clean", anchor: :right),
+        Port.output("error", anchor: :bottom)
+      ]
+    )
+  end
+
+  defp template_node(:branch, id, counter, position) do
+    Node.new!(id,
+      position: position,
+      label: "Branch #{counter}",
+      kind: :branch,
+      class: "demo-node--branch",
+      data: %{
+        accent: "#c084fc",
+        summary: "Split the workflow using a server-owned condition.",
+        template: :branch,
+        variant: :branch,
+        branch_labels: %{yes: "Qualified", no: "Fallback"}
+      },
+      ports: [
+        Port.input("input", anchor: :left),
+        Port.output("yes", anchor: :right),
+        Port.output("no", anchor: :bottom)
+      ]
+    )
+  end
+
+  defp template_node(:email, id, counter, position) do
+    Node.new!(id,
+      position: position,
+      label: "Send email #{counter}",
+      kind: :action,
+      class: "demo-node--action",
+      data: %{
+        accent: "#60a5fa",
+        summary: "Send a personalized message to the current lead.",
+        template: :email,
+        variant: :action,
+        template_name: "Qualified lead welcome"
+      },
+      ports: [Port.input("input", anchor: :left)]
+    )
+  end
+
+  defp template_node(:archive, id, counter, position) do
+    Node.new!(id,
+      position: position,
+      label: "Archive #{counter}",
+      kind: :action,
+      class: "demo-node--action",
+      data: %{
+        accent: "#94a3b8",
+        summary: "Persist the event for later inspection and replay.",
+        template: :archive,
+        variant: :action,
+        retention: "30 days"
+      },
+      ports: [Port.input("input", anchor: :left)]
+    )
+  end
+
+  defp added_node_position(counter) do
+    slot = counter - 1
+    %{x: 80 + rem(slot, 4) * 300, y: 520 + div(slot, 4) * 280}
+  end
+
+  defp take_node_id(scene) do
+    used_ids = MapSet.new(scene.nodes, & &1.id)
+    counter = max(node_meta_counter(scene.meta), inferred_node_counter(scene.nodes))
+    counter = next_unused_node_counter(counter, used_ids)
+
+    {"node-#{counter}", counter, put_next_node_id(scene.meta, counter + 1)}
+  end
+
+  defp node_meta_counter(%{next_node_id: counter}) when is_integer(counter) and counter > 0,
+    do: counter
+
+  defp node_meta_counter(%{"next_node_id" => counter}) when is_integer(counter) and counter > 0,
+    do: counter
+
+  defp node_meta_counter(_meta), do: 1
+
+  defp inferred_node_counter(nodes) do
+    Enum.reduce(nodes, 1, fn node, next_counter ->
+      case Regex.run(~r/\Anode-(\d+)\z/, node.id, capture: :all_but_first) do
+        [number] -> max(String.to_integer(number) + 1, next_counter)
+        _ -> next_counter
+      end
+    end)
+  end
+
+  defp next_unused_node_counter(counter, used_ids) do
+    if MapSet.member?(used_ids, "node-#{counter}") do
+      next_unused_node_counter(counter + 1, used_ids)
+    else
+      counter
+    end
+  end
+
+  defp put_next_node_id(meta, counter) when is_map(meta),
+    do: Map.put(meta, :next_node_id, counter)
+
+  defp put_next_node_id(_meta, counter), do: %{next_node_id: counter}
 
   defp take_edge_id(scene) do
     used_ids = MapSet.new(scene.edges, & &1.id)

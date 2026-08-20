@@ -10,8 +10,8 @@ The package is in early development and has not yet been released to Hex.
 
 A standalone Phoenix application lives in [`examples/demo`](examples/demo).
 It uses this repository as a path dependency and includes a five-node workflow,
-custom node rendering, the authoritative intent reducer, and server-triggered
-viewport controls.
+rich and dynamically updating node rendering, add/remove controls, the
+authoritative intent reducer, and server-triggered viewport controls.
 
 ```sh
 nix develop

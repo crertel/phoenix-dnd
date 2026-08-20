@@ -2,6 +2,7 @@ defmodule PhoenixDndDemoWeb.EditorLiveTest do
   use ExUnit.Case, async: true
 
   import Phoenix.ConnTest
+  import Phoenix.LiveViewTest
 
   @endpoint PhoenixDndDemoWeb.Endpoint
 
@@ -13,5 +14,53 @@ defmodule PhoenixDndDemoWeb.EditorLiveTest do
     assert html =~ ~s(phx-hook="PhoenixDnd.Editor.Graph")
     assert html =~ ~s(data-node-id="mixer")
     assert html =~ ~s(data-edge-id="edge-4")
+    assert html =~ "events received"
+    assert html =~ "current rate"
+    assert html =~ "Add node"
+    assert html =~ "Remove selected"
+    assert html =~ ~s(role="status")
+  end
+
+  test "adds and removes a selected node through the LiveView" do
+    {:ok, view, _html} = live(build_conn(), "/")
+
+    html =
+      view
+      |> form(".demo-add-form", %{"kind" => "branch"})
+      |> render_submit()
+
+    assert html =~ ~s(data-node-id="node-1")
+    assert html =~ "Branch 1"
+    assert html =~ ~s(data-scene-revision="1")
+    assert html =~ "added node-1 at r1"
+
+    html =
+      view
+      |> element(~s(button[phx-click="remove_selected"]))
+      |> render_click()
+
+    refute html =~ ~s(data-node-id="node-1")
+    assert html =~ ~s(data-scene-revision="2")
+    assert html =~ "removed selection at r2"
+  end
+
+  test "telemetry changes without advancing the scene revision" do
+    {:ok, view, initial_html} = live(build_conn(), "/")
+    assert initial_html =~ ~s(data-scene-revision="0")
+
+    send(view.pid, :demo_tick)
+    updated_html = render(view)
+
+    refute updated_html == initial_html
+    assert updated_html =~ ~s(data-scene-revision="0")
+  end
+
+  test "rejects malformed add events without crashing the LiveView" do
+    {:ok, view, _html} = live(build_conn(), "/")
+
+    html = render_hook(view, "add_node", %{})
+
+    assert html =~ "could not add node: choose a valid node type"
+    assert html =~ ~s(data-scene-revision="0")
   end
 end

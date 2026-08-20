@@ -31,7 +31,8 @@ defmodule PhoenixDndDemo.MixProject do
       {:phoenix_html, "~> 4.3"},
       {:phoenix_live_view, "~> 1.2"},
       {:bandit, "~> 1.5"},
-      {:jason, "~> 1.4"}
+      {:jason, "~> 1.4"},
+      {:lazy_html, "~> 0.1", only: :test}
     ]
   end
 
