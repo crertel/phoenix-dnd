@@ -12,7 +12,7 @@ defmodule PhoenixDnd.MixProject do
       start_permanent: Mix.env() == :prod,
       description: "A server-authoritative node editor component for Phoenix LiveView",
       package: package(),
-      docs: [main: "readme", extras: ["README.md"]],
+      docs: [main: "readme", extras: ["README.md", "CHANGELOG.md"]],
       aliases: aliases(),
       deps: deps()
     ]
@@ -36,7 +36,7 @@ defmodule PhoenixDnd.MixProject do
 
   defp package do
     [
-      files: ~w(lib priv .formatter.exs LICENSE mix.exs package.json README.md),
+      files: ~w(lib priv .formatter.exs CHANGELOG.md LICENSE mix.exs package.json README.md),
       licenses: ["MIT"],
       links: %{"Documentation" => "https://hexdocs.pm/phoenix_dnd"}
     ]
