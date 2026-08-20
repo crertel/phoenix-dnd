@@ -21,6 +21,25 @@ defmodule PhoenixDndDemoWeb.EditorLiveTest do
     assert html =~ ~s(role="status")
   end
 
+  test "serves the compiled colocated CSS manifest and extracted stylesheet" do
+    manifest =
+      build_conn()
+      |> get("/phoenix-colocated/phoenix_dnd/colocated.css")
+      |> response(200)
+
+    relative_path =
+      Enum.find(css_imports(manifest), &(Path.dirname(&1) == "PhoenixDnd.Editor")) ||
+        flunk("colocated CSS manifest did not include PhoenixDnd.Editor")
+
+    stylesheet =
+      build_conn()
+      |> get("/phoenix-colocated/phoenix_dnd/#{relative_path}")
+      |> response(200)
+
+    assert stylesheet =~ ".phoenix-dnd {"
+    assert stylesheet =~ ".phoenix-dnd__surface"
+  end
+
   test "adds and removes a selected node through the LiveView" do
     {:ok, view, _html} = live(build_conn(), "/")
 
@@ -62,5 +81,11 @@ defmodule PhoenixDndDemoWeb.EditorLiveTest do
 
     assert html =~ "could not add node: choose a valid node type"
     assert html =~ ~s(data-scene-revision="0")
+  end
+
+  defp css_imports(manifest) do
+    ~r{@import\s+"\./([^"]+\.css)";}
+    |> Regex.scan(manifest, capture: :all_but_first)
+    |> List.flatten()
   end
 end

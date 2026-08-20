@@ -27,7 +27,7 @@ defmodule PhoenixDndDemo.MixProject do
   defp deps do
     [
       {:phoenix_dnd, path: "../.."},
-      {:phoenix, "~> 1.8"},
+      {:phoenix, "~> 1.8.0"},
       {:phoenix_html, "~> 4.3"},
       {:phoenix_live_view, "~> 1.2"},
       {:bandit, "~> 1.5"},

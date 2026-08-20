@@ -104,6 +104,9 @@ defmodule PhoenixDnd.Editor do
   @impl Phoenix.LiveComponent
   def render(assigns) do
     ~H"""
+    <style :type={PhoenixDnd.ColocatedCSS} source="../../priv/static/phoenix_dnd.css">
+      /* Extract the packaged fallback stylesheet as colocated CSS. */
+    </style>
     <div
       id={Dom.editor_id(@id)}
       class={compact_classes(["phoenix-dnd", @class])}

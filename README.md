@@ -65,13 +65,58 @@ configuration resolves both `deps` and the Mix build path. If your asset
 pipeline is customized, make sure both are resolvable and run `mix compile`
 before bundling assets.
 
-Import the library CSS from `assets/css/app.css`. Use the dependency-relative
-path because Phoenix's default Tailwind task does not add `deps` as a package
-search path:
+`PhoenixDnd.Editor` declares its structural styles with
+[`Phoenix.LiveView.ColocatedCSS`](https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.ColocatedCSS.html).
+Import the generated manifest from `assets/css/app.css`:
+
+```css
+@import "phoenix-colocated/phoenix_dnd/colocated.css";
+```
+
+For Tailwind, colocated CSS requires Tailwind 4.2.3 or newer and version 0.5
+or newer of the `:tailwind` Hex package. Configure its environment so the
+resolver can see both dependencies and the Mix build path:
+
+```elixir
+env: %{
+  "NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]
+}
+```
+
+Add the generated component directory as a Tailwind source so changes are
+picked up automatically while developing:
+
+```css
+@source "../../_build/dev/phoenix-colocated/phoenix_dnd/*/";
+```
+
+With esbuild, use the same `NODE_PATH` configuration and import the stylesheet
+from JavaScript instead:
+
+```javascript
+import "phoenix-colocated/phoenix_dnd/colocated.css"
+```
+
+This produces a CSS output alongside the JavaScript bundle, which must also be
+linked from the application's root layout. In either setup, compile before
+running the asset build so LiveView has extracted both manifests. Phoenix's
+standard development flow does this automatically; custom release aliases
+should run `compile` before `assets.deploy`.
+
+The extracted rules are global but use `.phoenix-dnd`-prefixed selectors. The
+component's CSS custom properties can be overridden by the host application
+without relying on generated scope identifiers.
+
+For an asset pipeline that cannot consume colocated CSS, import the packaged
+standalone stylesheet instead:
 
 ```css
 @import "../../deps/phoenix_dnd/priv/static/phoenix_dnd.css";
 ```
+
+Use either the colocated manifest or the standalone stylesheet, not both. The
+standalone file is also the source used to generate the colocated stylesheet,
+so both integrations provide the same defaults.
 
 For a pipeline that cannot consume colocated manifests, import the fallback
 hook map directly from

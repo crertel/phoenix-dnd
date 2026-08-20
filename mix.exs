@@ -28,7 +28,7 @@ defmodule PhoenixDnd.MixProject do
 
   defp deps do
     [
-      {:phoenix, "~> 1.8"},
+      {:phoenix, "~> 1.8.0"},
       {:phoenix_live_view, "~> 1.2"},
       {:ex_doc, "~> 0.38", only: :dev, runtime: false}
     ]

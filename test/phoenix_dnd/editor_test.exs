@@ -96,6 +96,8 @@ defmodule PhoenixDnd.EditorTest do
     assert html =~ "data-dnd-wire-preview"
     assert html =~ "data-dnd-selection-rect"
     refute html =~ "must-not-be-rendered"
+    refute html =~ "<style"
+    refute html =~ "--phoenix-dnd-background"
   end
 
   test "renders custom node content with node and selection slot context" do

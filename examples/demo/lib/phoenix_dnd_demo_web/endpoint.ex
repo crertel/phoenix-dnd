@@ -9,6 +9,7 @@ defmodule PhoenixDndDemoWeb.Endpoint do
   ]
 
   @demo_assets Path.expand("../../assets", __DIR__)
+  @colocated_css Path.join(Mix.Project.build_path(), "phoenix-colocated/phoenix_dnd")
 
   socket("/live", Phoenix.LiveView.Socket,
     websocket: [connect_info: [session: @session_options]],
@@ -19,6 +20,13 @@ defmodule PhoenixDndDemoWeb.Endpoint do
     at: "/assets",
     from: @demo_assets,
     gzip: false
+  )
+
+  plug(Plug.Static,
+    at: "/phoenix-colocated/phoenix_dnd",
+    from: @colocated_css,
+    gzip: false,
+    only: ~w(colocated.css PhoenixDnd.Editor)
   )
 
   plug(Plug.Static,
@@ -36,7 +44,7 @@ defmodule PhoenixDndDemoWeb.Endpoint do
   plug(Plug.Static,
     at: "/phoenix-dnd",
     from: {:phoenix_dnd, "priv/static"},
-    only: ~w(phoenix_dnd.js phoenix_dnd.css)
+    only: ~w(phoenix_dnd.js)
   )
 
   if code_reloading? do
