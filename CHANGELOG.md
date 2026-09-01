@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog], and this project follows
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-01
+
 ### Added
 
 - A stateful, server-authoritative `PhoenixDnd.Editor` LiveComponent that
@@ -32,6 +34,7 @@ The format is based on [Keep a Changelog], and this project follows
 - Hex package metadata, an MIT license, a Nix development flake, and automated
   Elixir and JavaScript test suites.
 
-[Unreleased]: https://github.com/crertel/phoenix-dnd/commits/master
+[Unreleased]: https://github.com/crertel/phoenix-dnd/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/crertel/phoenix-dnd/releases/tag/v0.1.0
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
