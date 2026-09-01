@@ -34,6 +34,14 @@
               beamPackages.rebar3
               pkgs.nodejs_24
               pkgs.git
+
+              # Native dependencies for the Membrane WebRTC audio demo:
+              # ex_dtls needs pkg-config + OpenSSL, ex_libsrtp needs libsrtp2,
+              # and membrane_opus_plugin builds against libopus.
+              pkgs.pkg-config
+              pkgs.openssl
+              pkgs.libopus
+              pkgs.srtp
             ]
             ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
               pkgs.inotify-tools
