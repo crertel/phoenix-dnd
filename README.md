@@ -23,6 +23,25 @@ mix phx.server
 Visit <http://localhost:4000>. The demo uses native ESM and intentionally has
 no separate npm or asset-build step.
 
+## Membrane WebRTC studio
+
+A second application in [`examples/daw`](examples/daw) wires the editor to
+[Membrane](https://membrane.stream): the node graph *is* a live audio pipeline,
+processing WebRTC microphone audio and streaming the result back to the
+browser. Nodes are oscillators, filters, delays, and mixers; edges are signal
+paths; and a rejected connection is rejected because the audio graph could not
+perform it.
+
+```sh
+nix develop
+cd examples/daw
+mix setup
+mix phx.server
+```
+
+Visit <http://localhost:4001>, and wear headphones. See its
+[README](examples/daw/README.md) for the architecture and its trade-offs.
+
 ## Installation
 
 For local development, add the repository as a path dependency:

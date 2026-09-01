@@ -1,0 +1,337 @@
+/*
+ * The editor's own structural styles arrive through the colocated manifest,
+ * linked from the root layout. Everything here is studio chrome: the palette,
+ * the node bodies rendered into the editor's node slot, and the meters.
+ */
+
+:root {
+  color-scheme: dark;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --daw-ink: #f5f7fb;
+  --daw-muted: #8b95a8;
+  --daw-border: rgb(255 255 255 / 0.1);
+  --daw-panel: rgb(15 20 28 / 0.9);
+  --daw-accent: #77e6c5;
+  --daw-danger: #fb7185;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-block-size: 100%;
+  background: #070a10;
+}
+
+body {
+  margin: 0;
+  min-block-size: 100vh;
+  min-block-size: 100svh;
+  color: var(--daw-ink);
+  background:
+    radial-gradient(circle at 8% -12%, rgb(119 230 197 / 0.12), transparent 34rem),
+    radial-gradient(circle at 95% 2%, rgb(129 140 248 / 0.12), transparent 32rem), #070a10;
+}
+
+.daw {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100vh;
+  min-block-size: 100svh;
+}
+
+/* --- top bar --------------------------------------------------------- */
+
+.daw__bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-block-end: 1px solid var(--daw-border);
+  background: var(--daw-panel);
+}
+
+.daw__title h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.daw__title p {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: var(--daw-muted);
+}
+
+.daw__title code {
+  font-size: 0.78rem;
+  color: var(--daw-accent);
+}
+
+.daw__transport {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.daw__status {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--daw-border);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  color: var(--daw-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.daw__status::before {
+  content: "";
+  inline-size: 0.45rem;
+  block-size: 0.45rem;
+  border-radius: 50%;
+  background: var(--daw-muted);
+}
+
+.daw__status.is-live {
+  color: var(--daw-accent);
+  border-color: rgb(119 230 197 / 0.4);
+}
+
+.daw__status.is-live::before {
+  background: var(--daw-accent);
+  box-shadow: 0 0 0.5rem var(--daw-accent);
+}
+
+.daw__transport button,
+.daw__palette button {
+  font: inherit;
+  color: var(--daw-ink);
+  background: rgb(255 255 255 / 0.05);
+  border: 1px solid var(--daw-border);
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.daw__transport button:hover,
+.daw__palette button:hover {
+  background: rgb(255 255 255 / 0.1);
+  border-color: rgb(255 255 255 / 0.24);
+}
+
+.daw__notice {
+  margin: 0;
+  padding: 0.6rem 1.5rem;
+  font-size: 0.82rem;
+  color: #fecdd3;
+  background: rgb(251 113 133 / 0.12);
+  border-block-end: 1px solid rgb(251 113 133 / 0.3);
+}
+
+/* --- layout ---------------------------------------------------------- */
+
+.daw__body {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  flex: 1;
+  min-block-size: 0;
+}
+
+.daw__palette {
+  overflow-y: auto;
+  padding: 1rem;
+  border-inline-end: 1px solid var(--daw-border);
+  background: rgb(255 255 255 / 0.02);
+}
+
+.daw__hint {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #fcd34d;
+}
+
+.daw__palette h2 {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--daw-muted);
+}
+
+.daw__palette ul {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.daw__palette button {
+  inline-size: 100%;
+  text-align: start;
+  border-inline-start: 3px solid var(--daw-accent);
+}
+
+.daw__canvas {
+  min-inline-size: 0;
+  min-block-size: 0;
+}
+
+.daw__canvas .phoenix-dnd {
+  block-size: 100%;
+}
+
+/* The studio output. Deliberately visible with native controls: browsers
+   refuse unmuted autoplay until the page has been interacted with, and these
+   controls are the one reliable way to start it by hand. */
+.daw__audio {
+  block-size: 2rem;
+  inline-size: 13rem;
+}
+
+/* --- node bodies ----------------------------------------------------- */
+
+.daw-node {
+  inline-size: 15rem;
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.6rem 0.7rem 0.7rem;
+  border-radius: 0.6rem;
+  border-block-start: 3px solid var(--daw-accent);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.05), transparent 4rem);
+}
+
+.daw-node__head {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.daw-node__kind {
+  font-size: 0.82rem;
+  font-weight: 620;
+  color: var(--daw-accent);
+}
+
+.daw-node__db {
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--daw-muted);
+}
+
+.daw-node__summary {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: var(--daw-muted);
+}
+
+.daw-node__meter {
+  block-size: 0.3rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.08);
+  overflow: hidden;
+}
+
+.daw-node__meter-fill {
+  display: block;
+  block-size: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--daw-accent), #fbbf24 78%, var(--daw-danger));
+  transition: inline-size 90ms linear;
+}
+
+.daw-node__params {
+  display: grid;
+  gap: 0.45rem;
+  padding-block-start: 0.15rem;
+  border-block-start: 1px solid var(--daw-border);
+}
+
+.daw-param {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0;
+}
+
+.daw-param label {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 0.67rem;
+  color: var(--daw-muted);
+}
+
+.daw-param__value {
+  font-variant-numeric: tabular-nums;
+  color: var(--daw-ink);
+}
+
+.daw-param input[type="range"] {
+  inline-size: 100%;
+  block-size: 1rem;
+  margin: 0;
+  accent-color: var(--daw-accent);
+  cursor: ew-resize;
+}
+
+.daw-param select {
+  font: inherit;
+  font-size: 0.72rem;
+  color: var(--daw-ink);
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid var(--daw-border);
+  border-radius: 0.35rem;
+  padding: 0.2rem 0.3rem;
+}
+
+.daw-param--toggle label {
+  justify-content: flex-start;
+  cursor: pointer;
+}
+
+.daw-param--toggle input[type="checkbox"] {
+  accent-color: var(--daw-accent);
+  cursor: pointer;
+}
+
+/* Category tints, applied to the wrapper the editor renders around the slot. */
+.daw-node--source {
+  --daw-accent: #fbbf24;
+}
+
+.daw-node--effect {
+  --daw-accent: #38bdf8;
+}
+
+.daw-node--routing {
+  --daw-accent: #77e6c5;
+}
+
+.daw-node--output {
+  --daw-accent: #f87171;
+}
+
+.phoenix-dnd__node--selected .daw-node,
+.phoenix-dnd__node[data-dnd-selected="true"] .daw-node {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.1), transparent 4rem);
+}
