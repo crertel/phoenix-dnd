@@ -26,6 +26,9 @@ The format is based on [Keep a Changelog], and this project follows
 - A standalone Phoenix demo with rich node rendering, live transient telemetry,
   runtime node creation and removal, graph validation, and server-triggered
   viewport controls.
+- A second example application wiring the editor to Membrane: a WebRTC audio
+  studio whose node graph is a live DSP pipeline, with server-side accept and
+  reject decisions that reflect what the audio graph can actually perform.
 - Hex package metadata, an MIT license, a Nix development flake, and automated
   Elixir and JavaScript test suites.
 

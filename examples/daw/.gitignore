@@ -1,0 +1,11 @@
+/_build/
+/deps/
+/.elixir_ls/
+erl_crash.dump
+
+# `mix phx.digest` output. The JavaScript and CSS under priv/static are sources.
+/priv/static/cache_manifest.json
+/priv/static/**/*.gz
+
+# Written by Recorder nodes at runtime.
+/priv/recordings/*.wav
