@@ -4,11 +4,12 @@ A server-authoritative node editor for Phoenix LiveView, with focused
 client-side JavaScript for direct-manipulation interactions such as pan, zoom,
 selection, node dragging, and connection previews.
 
-The package is in early development and has not yet been released to Hex.
+The package is in early development. Its API may change between minor versions
+until 1.0.
 
 ## Demo application
 
-A standalone Phoenix application lives in [`examples/demo`](examples/demo).
+A standalone Phoenix application lives in [`examples/demo`](https://github.com/crertel/phoenix-dnd/tree/master/examples/demo).
 It uses this repository as a path dependency and includes a five-node workflow,
 rich and dynamically updating node rendering, add/remove controls, the
 authoritative intent reducer, and server-triggered viewport controls.
@@ -25,7 +26,7 @@ no separate npm or asset-build step.
 
 ## Membrane WebRTC studio
 
-A second application in [`examples/daw`](examples/daw) wires the editor to
+A second application in [`examples/daw`](https://github.com/crertel/phoenix-dnd/tree/master/examples/daw) wires the editor to
 [Membrane](https://membrane.stream): the node graph *is* a live audio pipeline,
 processing WebRTC microphone audio and streaming the result back to the
 browser. Nodes are oscillators, filters, delays, and mixers; edges are signal
@@ -40,24 +41,24 @@ mix phx.server
 ```
 
 Visit <http://localhost:4001>, and wear headphones. See its
-[README](examples/daw/README.md) for the architecture and its trade-offs.
+[README](https://github.com/crertel/phoenix-dnd/blob/master/examples/daw/README.md) for the architecture and its trade-offs.
 
 ## Installation
 
-For local development, add the repository as a path dependency:
+Add `phoenix_dnd` to your dependencies:
 
 ```elixir
 def deps do
   [
-    {:phoenix_dnd, path: "../phoenix-dnd"}
+    {:phoenix_dnd, "~> 0.1"}
   ]
 end
 ```
 
-Once published, use the Hex package instead:
+To work against a checkout of this repository instead, use a path dependency:
 
 ```elixir
-{:phoenix_dnd, "~> 0.1"}
+{:phoenix_dnd, path: "../phoenix-dnd"}
 ```
 
 Import the component's colocated hook manifest in `assets/js/app.js` and merge
